@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>起卦问事 · 墨卦</title>
+<link rel="stylesheet" href="css/ink.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav">
+    <a class="brand" href="index.html"><span class="mini-seal">墨</span>墨卦</a>
+    <div class="nav-links"><a href="index.html">首页</a><a href="bazi.html">八字命盘</a><a class="on" href="qigua.html">起卦问事</a></div>
+  </nav>
+
+  <section class="card">
+    <div class="card-title">心　中　所　问</div>
+    <div class="form">
+      <div class="field" style="grid-column:1/-1"><label>想问什么（可不填，默认综合）</label><textarea id="q-text" maxlength="200" placeholder="例：这次跳槽能不能成？下个月出差顺不顺？"></textarea></div>
+      <div class="field"><label>问事类别</label><select id="q-topic"></select></div>
+    </div>
+    <div class="tabs" style="margin-top:18px">
+      <div class="tab on" data-tab="time">临时起卦</div>
+      <div class="tab" data-tab="num">数字起卦</div>
+      <div class="tab" data-tab="coin">铜钱摇卦</div>
+    </div>
+
+    <div class="pane on" id="pane-time">
+      <p class="muted">梅花易数·时间起卦：年支数 + 农历月 + 农历日 得上卦，再加时辰数得下卦，总和取动爻。以你按下按钮的这一刻为准。</p>
+      <div class="row" style="margin-top:12px"><button class="btn" id="btn-time">以此刻起卦</button><span class="muted" id="time-now"></span></div>
+    </div>
+
+    <div class="pane" id="pane-num">
+      <p class="muted">心中默念所问之事，报数字：一个数（自动拆前后半）、两个数（上卦 / 下卦，和取动爻）或三个数（第三个定动爻）。用空格或逗号分隔。</p>
+      <div class="row" style="margin-top:12px"><input type="text" id="num-input" placeholder="如：7 21　或　8848　或　3, 6, 5" style="max-width:320px"><button class="btn" id="btn-num">由数成卦</button></div>
+      <div class="err" id="num-err"></div>
+    </div>
+
+    <div class="pane" id="pane-coin">
+      <p class="muted">三枚铜钱摇六次，自初爻起。三背为老阳、无背为老阴（动爻），一背少阳、两背少阴。<b>按住蓄力、松手掷出——力度只影响手感，结果由密码学随机数决定。</b></p>
+      <div class="altar">
+        <canvas id="coin-canvas"></canvas>
+        <div class="altar-hint" id="coin-hint">按住下方「掷」键蓄力，松手落坛</div>
+      </div>
+      <div class="power"><i id="power-bar"></i></div>
+      <div class="coin-tools">
+        <button class="btn" id="btn-coin">掷 第 1 爻</button>
+        <button class="btn small ghost" id="btn-coin-reset">重摇</button>
+        <button class="btn small ghost" id="btn-sound">音效：开</button>
+      </div>
+      <div class="yao-stack" id="yao-stack"></div>
+    </div>
+  </section>
+
+  <div id="result"></div>
+  <div id="ai" style="display:none"></div>
+
+  <footer>易卦属传统文化范畴 · 仅供文化研究与娱乐参考 · 不构成任何决策依据<br>
+    涉及健康以医学诊断为准 · 涉及财务理性决策 · <b>卦象仅供参考，人生在于自身的努力和选择</b>
+    <br><span class="seal-s">仅供参考</span></footer>
+</div>
+<script src="js/vendor/lunar.js"></script>
+<script src="js/core/ganzhi.js"></script>
+<script src="js/core/yijing-data.js"></script>
+<script src="js/core/meihua.js"></script>
+<script src="js/core/gua-reading.js"></script>
+<script src="js/ui/share.js"></script>
+<script src="js/ui/ai.js"></script>
+<script src="js/ui/coin-cast.js"></script>
+<script src="js/ui/coin-panel.js"></script>
+<script src="js/ui/gua-render.js"></script>
+<script src="js/ui/qigua-page.js"></script>
+</body>
+</html>

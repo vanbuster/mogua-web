@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八字命盘 · 墨卦</title>
+<link rel="stylesheet" href="css/ink.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav">
+    <a class="brand" href="index.html"><span class="mini-seal">墨</span>墨卦</a>
+    <div class="nav-links"><a href="index.html">首页</a><a class="on" href="bazi.html">八字命盘</a><a href="qigua.html">起卦问事</a></div>
+  </nav>
+
+  <section class="card" id="form-card">
+    <div class="card-title">报　上　生　辰</div>
+    <form class="form" id="bazi-form" autocomplete="off">
+      <div class="field"><label>称呼（可不填）</label><input type="text" id="f-name" maxlength="12" placeholder="如：小卢"></div>
+      <div class="field"><label>公历出生日期</label><input type="date" id="f-date" required min="1900-01-01" max="2099-12-31"></div>
+      <div class="field"><label>出生时间（24 小时制）</label><input type="time" id="f-time" value="12:00"></div>
+      <div class="field"><label>性别</label><select id="f-gender"><option value="1">男</option><option value="0">女</option></select></div>
+      <div class="field"><label class="check"><input type="checkbox" id="f-unknown"> 时辰不详（只排六字）</label></div>
+      <div class="field"><button class="btn" type="submit">排　盘</button></div>
+    </form>
+    <div class="muted" style="margin-top:12px">年柱以立春为界、月柱以节气为界、23:00 后日柱算次日（早晚子时法）。生辰只在你的浏览器里计算。</div>
+    <div class="err" id="f-err"></div>
+  </section>
+
+  <div id="actions" class="row" style="display:none;margin:-8px 0 16px;justify-content:flex-end">
+    <button class="btn small ghost" id="btn-share">复制分享链接</button>
+    <button class="btn small ghost" id="btn-download">下载单文件看板</button>
+    <button class="btn small ghost" id="btn-print">打印</button>
+  </div>
+  <div id="result"></div>
+  <div id="ai" style="display:none"></div>
+
+  <footer>命理属传统文化范畴 · 仅供文化研究与娱乐参考 · 不构成任何决策依据<br>
+    涉及健康以医学诊断为准 · 涉及财务理性决策 · <b>命理仅供参考，人生在于自身的努力和选择</b>
+    <br><span class="seal-s">仅供参考</span></footer>
+</div>
+<script src="js/vendor/lunar.js"></script>
+<script src="js/core/ganzhi.js"></script>
+<script src="js/core/bazi-luck.js"></script>
+<script src="js/core/bazi-engine.js"></script>
+<script src="js/core/bazi-reading.js"></script>
+<script src="js/ui/share.js"></script>
+<script src="js/ui/ai.js"></script>
+<script src="js/ui/bazi-render.js"></script>
+<script src="js/ui/bazi-page.js"></script>
+</body>
+</html>

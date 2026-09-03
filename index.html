@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>墨卦 · 赛博算命</title>
+<meta name="description" content="国风水墨风格的八字排盘、梅花易数起卦、数字起卦、铜钱摇卦与问事解答。纯前端，数据不出浏览器。">
+<link rel="stylesheet" href="css/ink.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav">
+    <a class="brand" href="index.html"><span class="mini-seal">墨</span>墨卦</a>
+    <div class="nav-links"><a class="on" href="index.html">首页</a><a href="bazi.html">八字命盘</a><a href="qigua.html">起卦问事</a></div>
+  </nav>
+
+  <header class="hero">
+    <div class="seal"><span>墨卦</span></div>
+    <h1>墨　卦</h1>
+    <div class="subtitle">四柱八字 · 梅花易数 · 铜钱六爻　|　<b>宣纸为底，朱砂为印，一盘一卦皆在此</b></div>
+    <div class="subtitle" style="margin-top:6px">纯前端运算 · 生辰与所问之事不离开你的浏览器</div>
+  </header>
+
+  <section class="card">
+    <div class="card-title">择　一　而　入</div>
+    <div class="entries">
+      <a class="entry" href="bazi.html">
+        <div class="big">命</div>
+        <h3>八字命盘</h3>
+        <p>输入生辰，排出四柱、十神、藏干，五行雷达与大运时间轴，流年流月红绿灯，综合论命一纸看板。</p>
+      </a>
+      <a class="entry" href="qigua.html#time">
+        <div class="big">卦</div>
+        <h3>临时起卦</h3>
+        <p>梅花易数时间起卦：以此刻的年月日时成卦，本卦、互卦、变卦与体用生克，回答眼下所问。</p>
+      </a>
+      <a class="entry" href="qigua.html#num">
+        <div class="big">数</div>
+        <h3>数字起卦</h3>
+        <p>心中默念一事，报一个或几个数字（手机尾号、房间号皆可），由数成卦，按类别解答。</p>
+      </a>
+      <a class="entry" href="qigua.html#coin">
+        <div class="big">钱</div>
+        <h3>铜钱摇卦</h3>
+        <p>三枚铜钱摇六次，老阴老阳自动标记动爻，六爻成卦，看过程与结局。</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-title">今　日　黄　历</div>
+    <div id="almanac" class="almanac"><div class="muted">正在翻黄历…</div></div>
+  </section>
+
+  <section class="card">
+    <div class="card-title">关　于　墨　卦</div>
+    <p style="font-size:14px;color:var(--ink2)">
+      本站由 <a href="https://github.com/vanbuster/bazi-skill" target="_blank" rel="noopener">赛博算命 Skill</a> 的国风水墨看板演化而来，
+      把原本只有装了 Agent 的人才能用的排盘能力做成了人人可玩的网页。历法计算基于
+      <a href="https://github.com/6tail/lunar-javascript" target="_blank" rel="noopener">lunar-javascript</a>（节气精确到分钟），
+      解读为规则引擎生成；若你有自己的 Claude API Key，可在结果页开启「AI 深读」获得更细的论断。
+    </p>
+  </section>
+
+  <footer>命理属传统文化范畴 · 仅供文化研究与娱乐参考 · 不构成任何决策依据<br>
+    涉及健康以医学诊断为准 · 涉及财务理性决策 · <b>命理仅供参考，人生在于自身的努力和选择</b>
+    <br><span class="seal-s">仅供参考</span></footer>
+</div>
+<script src="js/vendor/lunar.js"></script>
+<script src="js/ui/almanac.js"></script>
+</body>
+</html>
