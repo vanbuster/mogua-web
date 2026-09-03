@@ -132,15 +132,21 @@
     let coins = []; let parts = []; let ripples = [];
     let dialRot = 0; let glow = 0; let flash = 0; let shake = 0;
     let label = { text: '', life: 0 };
+    let tossWaits = 0;
     let raf = 0; let last = 0; let running = false;
     const COLORS = ['#f6e6ae', '#dcbc6f', '#b08a3e', '#7a5a16'];
     const TRI = ['☰', '☱', '☲', '☳', '☴', '☵', '☶', '☷'];
 
+    /** 返回是否拿到了有效尺寸。脚本在布局完成前跑时 clientWidth 会是 0，需向父级兜底 */
     function resize() {
       dpr = Math.min(root.devicePixelRatio || 1, 2);
-      W = canvas.clientWidth; H = canvas.clientHeight;
+      const parent = canvas.parentElement;
+      W = canvas.clientWidth || (parent && parent.clientWidth) || 0;
+      H = canvas.clientHeight || (parent && parent.clientHeight) || 0;
+      if (!W || !H) return false;
       canvas.width = W * dpr; canvas.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return true;
     }
 
     function seats() {
@@ -290,7 +296,7 @@
 
     /** 重算画布尺寸并把铜钱摆回坛位，保留当前正反面。tab 切换 / 窗口缩放时调用 */
     function refit() {
-      resize();
+      if (!resize()) { requestAnimationFrame(refit); return; }
       if (!coins.length) { place(null); draw(); return; }
       const st = seats();
       coins.forEach((c, i) => {
@@ -301,7 +307,8 @@
     }
 
     function reset() {
-      resize(); place(null); parts = []; ripples = []; glow = 0; flash = 0;
+      if (!resize()) { requestAnimationFrame(reset); return; }
+      place(null); parts = []; ripples = []; glow = 0; flash = 0;
       label = { text: '', life: 0 };
       draw();
     }
@@ -315,6 +322,12 @@
       const p = Math.max(0.25, Math.min(1, power || 0.5));
       const faces = randomFaces();
       resize();
+      if (!W || !H) {
+        // 画布尚未布局（刚切到本 tab）：让一帧再来，最多让 20 帧，避免无限递归
+        if (tossWaits++ > 20) { W = W || 560; H = H || 320; canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+        else return new Promise((res) => { requestAnimationFrame(() => toss(power).then(res)); });
+      }
+      tossWaits = 0;
       const st = seats();
       const dur = reduce ? 0.2 : 1.15 + p * 0.55;
       coins = st.map((s, i) => {

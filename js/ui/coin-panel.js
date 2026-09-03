@@ -105,7 +105,8 @@
     // 面板隐藏在未激活 tab 里时 clientWidth 为 0，画布必须在它可见后重算
     let lastW = 0;
     const refit = () => {
-      if (canvas.clientWidth > 0 && canvas.clientWidth !== lastW) { lastW = canvas.clientWidth; stage.refit(); }
+      const w = canvas.clientWidth;
+      if (w > 0 && (w !== lastW || canvas.width === 0)) { lastW = w; stage.refit(); }
     };
     new ResizeObserver(refit).observe(canvas);
 
