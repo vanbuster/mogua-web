@@ -41,14 +41,20 @@
       if (busy || tosses.length >= 6) return;
       busy = true; setBtn();
       hint.classList.add('hide');
-      const faces = await stage.toss(p);
-      const backs = CoinCast.backsOf(faces);
-      const line = Meihua.coinsToLine(backs);
-      tosses.push({ ...line, backs });
-      freshIdx = tosses.length - 1;
-      stage.announce(line.label, line.moving);
-      renderStack();
-      busy = false; setBtn();
+      try {
+        const faces = await stage.toss(p);
+        const backs = CoinCast.backsOf(faces);
+        const line = Meihua.coinsToLine(backs);
+        tosses.push({ ...line, backs });
+        freshIdx = tosses.length - 1;
+        stage.announce(line.label, line.moving);
+        renderStack();
+      } catch (e) {
+        // 任何异常都必须解锁按钮，否则用户只能刷新页面
+        console.error('摇卦失败', e);
+      } finally {
+        busy = false; setBtn();
+      }
       if (tosses.length === 6) {
         stage.finale();
         setTimeout(() => opts.onComplete(tosses), 400);

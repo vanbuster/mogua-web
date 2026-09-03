@@ -87,6 +87,7 @@ mogua-web/
 │   ├── share.js                分享链接编码 + 单文件看板导出
 │   └── ai.js                   AI 深读面板（provider 切换 + 流式渲染）
 ├── js/vendor/lunar.js          ← 6tail/lunar-javascript（MIT）
+├── scripts/bump-version.sh     ← 刷新资源版本串（改完前端必跑）
 └── tests/*.test.mjs            ← node:test，45 例
 ```
 
@@ -106,7 +107,11 @@ python3 -m http.server 4600 --directory /Users/van/Documents/Agent-Workbench/cla
 
 零构建，把整个目录原样传上去即可（`.nojekyll` 已备好，供 GitHub Pages 跳过 Jekyll）。所有路径都是相对路径，放在子目录里也能跑。
 
-> ⚠️ 改动 css/js 后要 bump 三个 HTML 里的 `?v=` 版本串，否则老访客会拿到强缓存的旧文件。当前版本串：`20260903b`。
+> ⚠️ **改动 css/js 后必须 bump 版本串**，否则老访客拿到的是强缓存的旧文件（本项目已经因此排查过两轮假 bug）：
+>
+> ```bash
+> ./scripts/bump-version.sh
+> ```
 
 | 平台 | 状态 |
 |---|---|

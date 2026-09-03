@@ -35,8 +35,14 @@
   function makeAudio() {
     let ctx = null; let on = true;
     const ensure = () => {
-      if (!ctx && (root.AudioContext || root.webkitAudioContext)) ctx = new (root.AudioContext || root.webkitAudioContext)();
-      if (ctx && ctx.state === 'suspended') ctx.resume().catch((e) => console.warn('audio resume failed', e));
+      try {
+        if (!ctx && (root.AudioContext || root.webkitAudioContext)) ctx = new (root.AudioContext || root.webkitAudioContext)();
+        if (ctx && ctx.state === 'suspended') ctx.resume().catch((e) => console.warn('audio resume failed', e));
+      } catch (e) {
+        // 音频不可用不该拖垮摇卦本身
+        console.warn('AudioContext unavailable', e);
+        on = false;
+      }
       return ctx;
     };
     function clink(gain, freq) {
@@ -296,7 +302,7 @@
 
     /** 重算画布尺寸并把铜钱摆回坛位，保留当前正反面。tab 切换 / 窗口缩放时调用 */
     function refit() {
-      if (!resize()) { requestAnimationFrame(refit); return; }
+      if (!resize()) { setTimeout(refit, 80); return; }
       if (!coins.length) { place(null); draw(); return; }
       const st = seats();
       coins.forEach((c, i) => {
@@ -307,7 +313,7 @@
     }
 
     function reset() {
-      if (!resize()) { requestAnimationFrame(reset); return; }
+      if (!resize()) { setTimeout(reset, 80); return; }
       place(null); parts = []; ripples = []; glow = 0; flash = 0;
       label = { text: '', life: 0 };
       draw();
@@ -323,9 +329,10 @@
       const faces = randomFaces();
       resize();
       if (!W || !H) {
-        // 画布尚未布局（刚切到本 tab）：让一帧再来，最多让 20 帧，避免无限递归
-        if (tossWaits++ > 20) { W = W || 560; H = H || 320; canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
-        else return new Promise((res) => { requestAnimationFrame(() => toss(power).then(res)); });
+        // 画布尚未布局（刚切到本 tab，或页面在后台不渲染）。重试用 setTimeout 而非 rAF：
+        // 后台标签页里 rAF 根本不回调，会让掷卦按钮永久卡在禁用态。
+        if (tossWaits++ > 12) { W = W || 560; H = H || 320; canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+        else return new Promise((res) => { setTimeout(() => toss(power).then(res), 80); });
       }
       tossWaits = 0;
       const st = seats();
