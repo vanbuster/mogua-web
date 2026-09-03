@@ -12,7 +12,34 @@
 | `index.html` | 首页：四入口 + 今日黄历（宜忌 / 吉神方位 / 冲煞 / 下一节气） |
 | `bazi.html` | 八字命盘：四柱 / 十神 / 藏干 / 纳音 / 十二长生 / 五行雷达 + 加权条 / 大运时间轴 / 当下气运三卡 / 十二流月红绿灯 / 未来五年 / 综合论命六宫格 / 命格特质（神煞）/ 开运方位色数；分享链接（URL hash）/ 下载零依赖单文件看板 / 打印 |
 | `qigua.html` | 起卦问事：**临时起卦**（梅花易数时间起卦）/ **数字起卦**（1-3 个数）/ **铜钱摇卦**（Canvas 卦坛，见下）→ 本卦·互卦·变卦 + 体用生克 + 按类别（综合/事业/感情/财运/学业/健康/出行）断语 + 卦辞原文 |
-| AI 深读（两页都有） | 可选：用户自带 Claude API Key，浏览器直连 `api.anthropic.com`，密钥只存本机 localStorage，不经任何中间服务器。规则引擎的结论不依赖它 |
+| AI 深读（两页都有） | 可选：自带任一家的 API Key，浏览器直连，密钥只存本机 localStorage，不经任何中间服务器。规则引擎的结论不依赖它，没 Key 也能完整玩 |
+
+## AI 深读支持哪些平台
+
+| 平台 | 协议 | 备注 |
+|---|---|---|
+| **DeepSeek 深度求索**（默认） | OpenAI 兼容 | 国内最容易拿到的 Key，手机号注册即可；支持 `deepseek-reasoner`，推演过程单独渲染 |
+| 智谱 GLM | OpenAI 兼容 | `glm-4-flash` 长期免费 |
+| 月之暗面 Kimi | OpenAI 兼容 | 注册赠额度 |
+| 通义千问 · 阿里百炼 | OpenAI 兼容 | DashScope compatible-mode |
+| Claude · Anthropic | Anthropic Messages | 需境外支付方式 |
+| 自定义 | OpenAI 兼容 | 填 baseURL + 模型名，可接 one-api / 硅基流动 / 本地 Ollama 网关 |
+
+四家国内平台**实测均放行浏览器直连**（CORS 通过），所以不需要自建代理。Key 按平台分开存 localStorage，切换平台不会丢。协议差异收敛在 `js/core/ai-providers.js`（纯函数，有测试）。
+
+## 动效
+
+- **进场**：滚动到视口才播（IntersectionObserver），卡片淡入上浮 + 朱砂竖线自上而下生长
+- **四柱**：逐柱 3D 翻入，干支大字墨迹从模糊渗到清晰
+- **五行**：雷达多边形自圆心展开、顶点依次弹出，百分比数字滚动，进度条延时填充
+- **大运**：金线自左向右描绘，节点依次浮现，当前大运脉冲呼吸
+- **流月**：十二格波浪式点亮，当前月描边呼吸；凶象卡片朱砂微光
+- **卦象**：六爻自下而上落笔（阳爻一笔、阴爻两侧对开），判词与卷首印章从上方落下压实
+- **交互**：入口卡片墨韵跟随鼠标、按钮按下墨点扩散、悬停微浮
+
+实现在 `css/motion.css`（动画本体）+ `js/ui/reveal.js`（何时动、第几个动），与版式样式分离。全部动效在 `prefers-reduced-motion` 和打印时关闭。
+
+**渐进增强**：百分比数字、五行条、导出的单文件看板都不依赖动画帧——后台标签页里 rAF 与 IntersectionObserver 不回调时，内容直接停在终值，不会卡在初始态。
 
 ## 铜钱摇卦的动画
 
@@ -32,14 +59,16 @@
 - 五行量化：天干 1.0，藏干本气 0.6 / 中气 0.3 / 余气 0.1，最大余数法取整（与 skill `chart-calculation.md` §2 一致）
 - 旺衰：印比合计 + 月令得失 → 身旺 / 中和 / 身弱 → 喜忌五行；红绿灯按冲合刑害 + 喜忌 + 伤官见官 / 七杀攻身评分
 - 梅花易数：先天卦数（乾一…坤八）、余 0 作 8、动爻余 0 作 6；多爻动时体用取最上一动爻（简化约定，页面会标注）
-- AI 深读：`claude-opus-5`，流式，`fallbacks: "default"`（服务端拒答回退），处理 `refusal`
+- AI 深读：六家 provider，两种协议适配，流式 SSE；Anthropic 侧处理 `refusal`
 
 ```
 mogua-web/
 ├── index.html / bazi.html / qigua.html
 ├── css/ink.css                 ← 设计系统（沿用 bazi-skill dashboard-sop.md tokens）
+├── css/motion.css              ← 动效层（与版式分离）
 ├── js/core/                    ← 纯逻辑，浏览器 / Node 共用，有测试
 │   ├── ganzhi.js               干支表、十神、藏干加权、地支关系
+│   ├── ai-providers.js         六家 provider 目录 + 请求构造 + SSE 解析
 │   ├── bazi-engine.js          排盘事实（四柱/大运/流年流月/旺衰/格局）
 │   ├── bazi-luck.js            红绿灯评分 + 神煞查法
 │   ├── bazi-reading.js         八字文案（六宫格/特质/建议）
@@ -52,12 +81,13 @@ mogua-web/
 │   ├── bazi-render.js          命盘看板 HTML + 五行雷达 SVG
 │   ├── qigua-page.js           起卦页流程（三种起卦 → 解卦）
 │   ├── gua-render.js           卦象渲染（六爻图 + 断语）
+│   ├── reveal.js               进场观察器 + 交错编号 + 数字滚动
 │   ├── coin-cast.js            铜钱 Canvas 动画引擎（卦坛/粒子/音效，纯函数可测）
 │   ├── coin-panel.js           蓄力交互 + 六爻塔 + 静音开关
 │   ├── share.js                分享链接编码 + 单文件看板导出
-│   └── ai.js                   BYOK 的 Claude 流式深读
+│   └── ai.js                   AI 深读面板（provider 切换 + 流式渲染）
 ├── js/vendor/lunar.js          ← 6tail/lunar-javascript（MIT）
-└── tests/*.test.mjs            ← node:test，36 例
+└── tests/*.test.mjs            ← node:test，45 例
 ```
 
 ## 本地运行
@@ -75,6 +105,8 @@ python3 -m http.server 4600 --directory /Users/van/Documents/Agent-Workbench/cla
 ## 部署
 
 零构建，把整个目录原样传上去即可（`.nojekyll` 已备好，供 GitHub Pages 跳过 Jekyll）。所有路径都是相对路径，放在子目录里也能跑。
+
+> ⚠️ 改动 css/js 后要 bump 三个 HTML 里的 `?v=` 版本串，否则老访客会拿到强缓存的旧文件。当前版本串：`20260903b`。
 
 | 平台 | 状态 |
 |---|---|
