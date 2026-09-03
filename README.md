@@ -3,7 +3,7 @@
 把 [bazi-skill](../bazi-skill/)（只有装了 Claude Code 的人才能用的八字 skill）做成**人人可玩的静态网页**，
 沿用它的国风水墨美术系统（宣纸 / 朱砂印 / 楷体 / 五行五色 / 雷达图），并加入起卦问事。
 
-> 状态：**本地可用，未部署**（2026-09-03）。部署属红线 §3.6，等 van 决定。
+> 🌐 **线上入口：https://vanbuster.github.io/mogua-web/** （2026-09-03 上线）
 
 ## 产出清单
 
@@ -74,7 +74,19 @@ python3 -m http.server 4600 --directory /Users/van/Documents/Agent-Workbench/cla
 
 ## 部署
 
-零构建，把整个目录原样传上去即可（`.nojekyll` 已备好，供 GitHub Pages 跳过 Jekyll）。所有路径都是相对路径，放在子目录里也能跑。**尚未部署**，平台待定。
+零构建，把整个目录原样传上去即可（`.nojekyll` 已备好，供 GitHub Pages 跳过 Jekyll）。所有路径都是相对路径，放在子目录里也能跑。
+
+| 平台 | 状态 |
+|---|---|
+| **GitHub Pages** | ✅ 已上线 https://vanbuster.github.io/mogua-web/ ，push 到 `main` 即自动更新 |
+| 飞书妙搭 | ⏳ 待一次 user 授权（`lark-cli auth login --domain apps`，缺 `spark:app:write`），之后 `lark-cli apps +create --as user` → `apps +html-publish --path ./dist` |
+| Vercel | ⏳ 待用户在网页导入 GitHub repo（零配置，framework 选 Other） |
+
+发布给妙搭前先生成干净产物：
+
+```bash
+rsync -a --exclude='.git/' --exclude='dist/' --exclude='tests/' ./ dist/
+```
 
 ## 已知边界
 
@@ -85,8 +97,8 @@ python3 -m http.server 4600 --directory /Users/van/Documents/Agent-Workbench/cla
 
 ## 下游
 
-- 部署：等 van 决定平台（GitHub Pages 与 prd-copilot 官网同路线；或 `lark-apps` 部署到飞书妙搭）
-- 若要给无 Key 的访客提供 AI 深读，需加一个带服务端密钥的代理（Fate-Ring 的 `api/deepseek` Vercel 函数是现成模式）
+- 补齐飞书妙搭与 Vercel 两个入口（各差用户一次授权，见上表）
+- 若要给无 Key 的访客提供 AI 深读，需加一个带服务端密钥的代理（Fate-Ring 的 `api/deepseek` Vercel 函数是现成模式），Vercel 部署完就能直接加
 
 ## 许可
 
