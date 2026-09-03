@@ -9,9 +9,11 @@
       label: 'DeepSeek 深度求索',
       proto: 'openai',
       endpoint: 'https://api.deepseek.com/chat/completions',
+      // V4 起不再用不同模型区分是否推理，改为顶层 thinking / reasoning_effort 开关
+      thinking: true,
       models: [
-        ['deepseek-chat', 'DeepSeek-V3 · 快'],
-        ['deepseek-reasoner', 'DeepSeek-R1 · 会先推演再答'],
+        ['deepseek-v4-flash', 'V4 Flash · 快且便宜'],
+        ['deepseek-v4-pro', 'V4 Pro · 更强'],
       ],
       console: 'https://platform.deepseek.com/api_keys',
       hint: '国内最容易拿到的 Key：手机号注册即可创建，按量计费很便宜。',
@@ -80,6 +82,22 @@
 
   const DEFAULT = 'deepseek';
   const MAX_TOKENS = 4000;
+  // DeepSeek V4 的 reasoning_effort 取值；off 表示整个关掉思考
+  const EFFORTS = [
+    ['low', '浅思 · 最快'],
+    ['high', '深思'],
+    ['max', '极思 · 最慢最贵'],
+    ['off', '不思考'],
+  ];
+  const DEFAULT_EFFORT = 'low';
+
+  /** 存过的模型名可能已下线（如 deepseek-chat），不在列表里就回落到首个 */
+  function resolveModel(providerId, model) {
+    const p = PROVIDERS[providerId];
+    if (!p || !p.models.length) return model || '';
+    const ok = p.models.some((m) => m[0] === model);
+    return ok ? model : p.models[0][0];
+  }
 
   /** 组装一次流式请求。返回 {url, headers, body, proto} */
   function buildRequest(o) {
@@ -106,19 +124,30 @@
         }),
       };
     }
+    const body = {
+      model, stream: true, max_tokens: MAX_TOKENS,
+      messages: [{ role: 'system', content: o.system }, { role: 'user', content: o.prompt }],
+    };
+    if (p.thinking) {
+      // 仅 DeepSeek 支持，别家收到这两个字段会报错，所以按 provider 加
+      const eff = o.effort || DEFAULT_EFFORT;
+      if (eff === 'off') {
+        body.thinking = { type: 'disabled' };
+      } else {
+        body.thinking = { type: 'enabled' };
+        body.reasoning_effort = EFFORTS.some((e) => e[0] === eff && e[0] !== 'off') ? eff : DEFAULT_EFFORT;
+      }
+    }
     return {
       proto: 'openai', url,
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
-      body: JSON.stringify({
-        model, stream: true, max_tokens: MAX_TOKENS,
-        messages: [{ role: 'system', content: o.system }, { role: 'user', content: o.prompt }],
-      }),
+      body: JSON.stringify(body),
     };
   }
 
   /**
    * 返回一个逐行解析器：line → {text} | {think} | {stop} | null
-   * think 是推理型模型（如 deepseek-reasoner）的思考流，单独渲染。
+   * think 是推理流（DeepSeek V4 开启 thinking 时的 reasoning_content），单独渲染。
    */
   function makeParser(proto) {
     return function parse(line) {
@@ -162,7 +191,7 @@
     return msg ? `${head}：${msg}` : head;
   }
 
-  const API = { PROVIDERS, DEFAULT, MAX_TOKENS, buildRequest, makeParser, explainError };
+  const API = { PROVIDERS, DEFAULT, MAX_TOKENS, EFFORTS, DEFAULT_EFFORT, resolveModel, buildRequest, makeParser, explainError };
   root.AIProviders = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

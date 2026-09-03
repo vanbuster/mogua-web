@@ -22,16 +22,62 @@ test('provider 目录：DeepSeek 为默认，且每家都有必需字段', () =>
 });
 
 test('构造请求：OpenAI 兼容协议（DeepSeek）', () => {
-  const r = P.buildRequest({ provider: 'deepseek', model: 'deepseek-chat', key: 'sk-abc', system: 'S', prompt: 'P' });
+  const r = P.buildRequest({ provider: 'deepseek', model: 'deepseek-v4-flash', key: 'sk-abc', system: 'S', prompt: 'P' });
   assert.equal(r.url, 'https://api.deepseek.com/chat/completions');
   assert.equal(r.headers.Authorization, 'Bearer sk-abc');
   assert.equal(r.headers['Content-Type'], 'application/json');
   assert.ok(!r.headers['x-api-key']);
   const b = JSON.parse(r.body);
-  assert.equal(b.model, 'deepseek-chat');
+  assert.equal(b.model, 'deepseek-v4-flash');
   assert.equal(b.stream, true);
   assert.deepEqual(b.messages[0], { role: 'system', content: 'S' });
   assert.deepEqual(b.messages[1], { role: 'user', content: 'P' });
+});
+
+test('DeepSeek V4：模型为 v4-flash / v4-pro，思考参数是顶层字段', () => {
+  const ids = P.PROVIDERS.deepseek.models.map((m) => m[0]);
+  assert.deepEqual(ids, ['deepseek-v4-flash', 'deepseek-v4-pro']);
+  assert.equal(P.PROVIDERS.deepseek.thinking, true);
+
+  const b = JSON.parse(P.buildRequest({ provider: 'deepseek', model: 'deepseek-v4-pro', key: 'k', system: 'S', prompt: 'P', effort: 'high' }).body);
+  assert.deepEqual(b.thinking, { type: 'enabled' });
+  assert.equal(b.reasoning_effort, 'high');
+  assert.ok(!('thinking' in (b.thinking.reasoning_effort || {})), 'reasoning_effort 不嵌套在 thinking 里');
+});
+
+test('DeepSeek V4：effort 传 off 时关闭思考，且不带 reasoning_effort', () => {
+  const b = JSON.parse(P.buildRequest({ provider: 'deepseek', model: 'deepseek-v4-flash', key: 'k', prompt: 'P', effort: 'off' }).body);
+  assert.deepEqual(b.thinking, { type: 'disabled' });
+  assert.ok(!('reasoning_effort' in b));
+});
+
+test('DeepSeek V4：effort 缺省为 low（算命解读不需要 max 推理）', () => {
+  const b = JSON.parse(P.buildRequest({ provider: 'deepseek', model: 'deepseek-v4-flash', key: 'k', prompt: 'P' }).body);
+  assert.equal(b.reasoning_effort, 'low');
+  assert.deepEqual(b.thinking, { type: 'enabled' });
+});
+
+test('DeepSeek V4：非法 effort 回落到 low，不把脏值发出去', () => {
+  const b = JSON.parse(P.buildRequest({ provider: 'deepseek', model: 'deepseek-v4-flash', key: 'k', prompt: 'P', effort: 'medium' }).body);
+  assert.equal(b.reasoning_effort, 'low');
+});
+
+test('只有 DeepSeek 带思考参数，别家不能被污染', () => {
+  ['zhipu', 'moonshot', 'qwen'].forEach((id) => {
+    const b = JSON.parse(P.buildRequest({ provider: id, model: 'm', key: 'k', prompt: 'P', effort: 'high' }).body);
+    assert.ok(!('thinking' in b), id + ' 不该带 thinking');
+    assert.ok(!('reasoning_effort' in b), id + ' 不该带 reasoning_effort');
+  });
+  const c = JSON.parse(P.buildRequest({ provider: 'claude', model: 'claude-opus-5', key: 'k', prompt: 'P', effort: 'high' }).body);
+  assert.ok(!('reasoning_effort' in c));
+});
+
+test('模型迁移：localStorage 里存的旧模型名不在列表里时回落到首个', () => {
+  assert.equal(P.resolveModel('deepseek', 'deepseek-chat'), 'deepseek-v4-flash');
+  assert.equal(P.resolveModel('deepseek', 'deepseek-reasoner'), 'deepseek-v4-flash');
+  assert.equal(P.resolveModel('deepseek', 'deepseek-v4-pro'), 'deepseek-v4-pro');
+  assert.equal(P.resolveModel('deepseek', ''), 'deepseek-v4-flash');
+  assert.equal(P.resolveModel('custom', 'anything'), 'anything');
 });
 
 test('构造请求：Anthropic 协议（system 独立字段 + 浏览器直连头）', () => {

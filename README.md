@@ -18,7 +18,7 @@
 
 | 平台 | 协议 | 备注 |
 |---|---|---|
-| **DeepSeek 深度求索**（默认） | OpenAI 兼容 | 国内最容易拿到的 Key，手机号注册即可；支持 `deepseek-reasoner`，推演过程单独渲染 |
+| **DeepSeek 深度求索**（默认） | OpenAI 兼容 | 国内最容易拿到的 Key，手机号注册即可。**V4 Flash / V4 Pro**，1M 上下文；思考深度可选（浅思/深思/极思/不思考），推演过程单独渲染 |
 | 智谱 GLM | OpenAI 兼容 | `glm-4-flash` 长期免费 |
 | 月之暗面 Kimi | OpenAI 兼容 | 注册赠额度 |
 | 通义千问 · 阿里百炼 | OpenAI 兼容 | DashScope compatible-mode |
@@ -26,6 +26,8 @@
 | 自定义 | OpenAI 兼容 | 填 baseURL + 模型名，可接 one-api / 硅基流动 / 本地 Ollama 网关 |
 
 四家国内平台**实测均放行浏览器直连**（CORS 通过），所以不需要自建代理。Key 按平台分开存 localStorage，切换平台不会丢。协议差异收敛在 `js/core/ai-providers.js`（纯函数，有测试）。
+
+**DeepSeek V4 的接口变化**（2026-09 起）：不再用不同模型 ID 区分是否推理（旧的 `deepseek-chat` / `deepseek-reasoner` 已不在文档模型表内），改为两个**顶层**请求参数 `thinking: {type: "enabled"|"disabled"}` 与 `reasoning_effort: "low"|"high"|"max"`。这两个字段只发给 DeepSeek，别家会报错。本站默认 `V4 Flash + 浅思`——命理解读不吃深推理，浅思又快又便宜，推演区照样有内容可看。存在 localStorage 里的旧模型名会自动迁移到 V4（`resolveModel`）。
 
 ## 动效
 
@@ -88,7 +90,7 @@ mogua-web/
 │   └── ai.js                   AI 深读面板（provider 切换 + 流式渲染）
 ├── js/vendor/lunar.js          ← 6tail/lunar-javascript（MIT）
 ├── scripts/bump-version.sh     ← 刷新资源版本串（改完前端必跑）
-└── tests/*.test.mjs            ← node:test，45 例
+└── tests/*.test.mjs            ← node:test，51 例
 ```
 
 ## 本地运行

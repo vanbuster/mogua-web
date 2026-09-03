@@ -9,6 +9,7 @@
     model: (id) => 'mogua_ai_model_' + id,
     key: (id) => 'mogua_ai_key_' + id,
     endpoint: 'mogua_ai_endpoint_custom',
+    effort: 'mogua_ai_effort',
   };
   const SYSTEM = '你是一位熟读《滴天髓》《子平真诠》《梅花易数》的命理研究者，用简体中文、国风但不晦涩的语气作答。' +
     '结论先行，分段清晰，不用恐吓语，不给绝对化断语；涉及健康提醒以医学为准，涉及财务提醒理性决策。' +
@@ -62,6 +63,7 @@
         <div class="field"><label>模型平台</label>
           <select id="ai-prov">${optionsHtml(provIds.map((id) => [id, P.PROVIDERS[id].label]), pid)}</select></div>
         <div class="field" id="ai-model-wrap"><label>模型</label><select id="ai-model"></select></div>
+        <div class="field" id="ai-effort-wrap"><label>思考深度</label><select id="ai-effort"></select></div>
         <div class="field" id="ai-endpoint-wrap" style="display:none"><label>接口地址</label>
           <input type="text" id="ai-endpoint" placeholder="https://…/v1/chat/completions"></div>
         <div class="field"><label>API Key</label><input type="password" id="ai-key" placeholder="sk-…"></div>
@@ -73,7 +75,7 @@
 
     const $ = (id) => container.querySelector('#' + id);
     const provSel = $('ai-prov'); const modelSel = $('ai-model'); const keyIn = $('ai-key');
-    const endpointIn = $('ai-endpoint'); const btn = $('ai-go');
+    const endpointIn = $('ai-endpoint'); const btn = $('ai-go'); const effortSel = $('ai-effort');
     const out = $('ai-out'); const think = $('ai-think'); const hint = $('ai-hint'); const consoleLink = $('ai-console');
 
     function syncProvider() {
@@ -81,11 +83,14 @@
       const isCustom = pid === 'custom';
       $('ai-model-wrap').style.display = isCustom ? 'none' : '';
       $('ai-endpoint-wrap').style.display = isCustom ? '' : 'none';
-      modelSel.innerHTML = optionsHtml(p.models, get(LS.model(pid), p.models[0] && p.models[0][0]));
-      if (isCustom) {
-        modelSel.innerHTML = '';
-        endpointIn.value = get(LS.endpoint);
-      }
+      // 存过的模型名可能已下线（如 V4 之前的 deepseek-chat），迁移到现有列表
+      const model = P.resolveModel(pid, get(LS.model(pid)));
+      modelSel.innerHTML = isCustom ? '' : optionsHtml(p.models, model);
+      if (!isCustom) set(LS.model(pid), model);
+      if (isCustom) endpointIn.value = get(LS.endpoint);
+      // 思考深度只有支持的平台才显示
+      $('ai-effort-wrap').style.display = p.thinking ? '' : 'none';
+      if (p.thinking) effortSel.innerHTML = optionsHtml(P.EFFORTS, get(LS.effort, P.DEFAULT_EFFORT));
       keyIn.value = get(LS.key(pid));
       keyIn.placeholder = p.placeholder || 'sk-…';
       hint.textContent = p.hint || '';
@@ -101,7 +106,7 @@
       if (!el) {
         const wrap = document.createElement('div');
         wrap.className = 'field';
-        wrap.innerHTML = '<label>模型名</label><input type="text" id="ai-model-custom" placeholder="如 deepseek-chat">';
+        wrap.innerHTML = '<label>模型名</label><input type="text" id="ai-model-custom" placeholder="如 deepseek-v4-flash">';
         $('ai-endpoint-wrap').after(wrap);
         el = wrap.querySelector('input');
         el.value = get(LS.model('custom'));
@@ -123,6 +128,7 @@
       toggleCustomModel();
     };
     modelSel.onchange = () => set(LS.model(pid), modelSel.value);
+    effortSel.onchange = () => set(LS.effort, effortSel.value);
 
     btn.onclick = async () => {
       const customModel = container.querySelector('#ai-model-custom');
@@ -137,12 +143,13 @@
       let text = ''; let reasoning = '';
       try {
         const stop = await streamChat(
-          { provider: pid, model, key: keyIn.value.trim(), endpoint: endpointIn.value.trim(), system: SYSTEM, prompt: buildPrompt() },
+          { provider: pid, model, key: keyIn.value.trim(), endpoint: endpointIn.value.trim(),
+            effort: effortSel.value || P.DEFAULT_EFFORT, system: SYSTEM, prompt: buildPrompt() },
           (d) => { text += d; out.textContent = text; },
           (d) => {
             reasoning += d;
             think.style.display = '';
-            think.textContent = '推演：' + reasoning;
+            think.textContent = '推演 · ' + (P.PROVIDERS[pid].label) + '\n' + reasoning;
             think.scrollTop = think.scrollHeight;
           },
         );
