@@ -47,9 +47,11 @@
     $('actions').style.display = 'flex';
     $('ai').style.display = 'block';
     AI.mount($('ai'), aiPrompt);
-    setTimeout(() => document.querySelectorAll('.wx-bar').forEach((b) => { b.style.width = b.dataset.w + '%'; }), 150);
     history.replaceState(null, '', toHash(input));
     result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    Reveal.watch(result);
+    // 用 setTimeout 而非 rAF：后台标签页里 rAF 不跑，五行条会永远停在 0
+    setTimeout(() => document.querySelectorAll('.wx-bar').forEach((b) => { b.style.width = b.dataset.w + '%'; }), 400);
   }
 
   form.addEventListener('submit', (e) => {

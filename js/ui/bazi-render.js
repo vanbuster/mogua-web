@@ -21,11 +21,11 @@
     WX_ORDER.forEach((w, i) => {
       const c = WXC[WX_CLS[w]];
       const [px, py] = pt(i, (pct[w] / MAX) * 0.92);
-      dots += `<circle cx="${px}" cy="${py}" r="4" fill="${c}" stroke="#fff8e4" stroke-width="1"/>`;
+      dots += `<circle class="radar-dot" style="--i:${i}" cx="${px}" cy="${py}" r="4" fill="${c}" stroke="#fff8e4" stroke-width="1"/>`;
       const [lx, ly] = pt(i, 1.16);
-      lab += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="22" font-weight="bold" font-family="STKaiti,serif">${w}</text>`;
+      lab += `<text class="radar-label" style="--i:${i}" x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="22" font-weight="bold" font-family="STKaiti,serif">${w}</text>`;
     });
-    return `<svg viewBox="0 0 280 284" width="100%" style="max-width:300px;display:block">${grid}${ax}<polygon points="${vp}" fill="rgba(165,41,41,.20)" stroke="#a52929" stroke-width="2" stroke-linejoin="round"/>${dots}${lab}</svg>`;
+    return `<svg viewBox="0 0 280 284" width="100%" style="max-width:300px;display:block">${grid}${ax}<polygon class="radar-shape" points="${vp}" fill="rgba(165,41,41,.20)" stroke="#a52929" stroke-width="2" stroke-linejoin="round"/>${dots}${lab}</svg>`;
   }
 
   function pillarsHtml(chart) {
@@ -45,7 +45,7 @@
     const roleOf = (w) => Object.keys(gw).find((k) => gw[k] === w);
     const bars = WX_ORDER.map((w) => `<div class="wx-row"><div class="wx-name ${WX_CLS[w]}">${w}</div>
       <div class="wx-bar-bg"><div class="wx-bar ${WX_CLS[w]}" data-w="${pct[w]}"></div></div>
-      <div class="wx-pct">${pct[w]}%<small>${roleOf(w)}${chart.strength.favor.includes(w) ? '·喜' : '·忌'}</small></div></div>`).join('');
+      <div class="wx-pct"><span class="count" data-to="${pct[w]}">${pct[w]}%</span><small>${roleOf(w)}${chart.strength.favor.includes(w) ? '·喜' : '·忌'}</small></div></div>`).join('');
     return `<div class="wx-flex"><div>${radar(pct)}</div><div>${bars}</div></div><div class="wx-note">${esc(chart.strength.reason)}</div>`;
   }
 

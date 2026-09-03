@@ -1,5 +1,5 @@
 /* 首页「今日黄历」：全部取自 lunar-javascript。 */
-(function () {
+(function (root) {
   'use strict';
   const el = document.getElementById('almanac');
   if (!el || typeof Solar === 'undefined') return;
@@ -22,4 +22,5 @@
     `<div style="grid-column:1/-1"><div class="k">宜</div><div>${tags(l.getDayYi(), 'yi')}</div></div>`,
     `<div style="grid-column:1/-1"><div class="k">忌</div><div>${tags(l.getDayJi(), 'ji')}</div></div>`,
   ].join('');
-})();
+  if (root.Reveal) root.Reveal.watch(document);
+})(window);

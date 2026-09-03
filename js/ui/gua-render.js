@@ -8,7 +8,7 @@
   }
 
   function guaBox(title, hex, movingList, cls) {
-    return `<div class="gua-box ${cls || ''}"><h4>${title}</h4>${yao(hex.lines, movingList)}
+    return `<div class="gua-box cast ${cls || ''}"><h4>${title}</h4>${yao(hex.lines, movingList)}
       <div class="gua-name">${hex.name}</div><div class="gua-sym">${hex.upper.sym}${hex.upper.name}${hex.upper.nature} 上 · ${hex.lower.sym}${hex.lower.name}${hex.lower.nature} 下 · 第 ${hex.n} 卦</div></div>`;
   }
 

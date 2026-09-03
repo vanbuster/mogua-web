@@ -202,8 +202,16 @@ textarea{min-height:76px;resize:vertical}
 .yao-slot.fresh i,.yao-slot.fresh b{animation:yaoIn .55s cubic-bezier(.2,.9,.3,1.2)}
 @keyframes yaoIn{0%{opacity:0;transform:translateX(-18px) scaleX(.5)}100%{opacity:1;transform:none}}
 
-/* AI */
+/* AI 深读 */
 .ai-box{border:1px dashed rgba(165,41,41,.5);padding:16px 18px;border-radius:4px;background:rgba(255,244,216,.5)}
+.ai-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.ai-title{letter-spacing:3px}
+.ai-console{text-decoration:none;border-bottom:1px dashed currentColor;white-space:nowrap}
+.ai-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px 14px;align-items:end}
+.ai-form .btn{width:100%}
+.ai-hint{margin-top:10px;font-size:12.5px}
+.ai-think{margin-top:12px;padding:10px 12px;border-left:3px solid var(--gold);background:rgba(120,90,40,.06);
+  font-size:13px;color:#8a7755;line-height:1.75;max-height:160px;overflow:auto;white-space:pre-wrap;border-radius:0 3px 3px 0}
 .ai-out{white-space:pre-wrap;font-size:15px;color:var(--ink2);line-height:1.85;margin-top:12px}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:rot .8s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes rot{to{transform:rotate(360deg)}}

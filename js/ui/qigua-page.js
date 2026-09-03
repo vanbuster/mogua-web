@@ -42,6 +42,7 @@
     $('ai').style.display = 'block';
     AI.mount($('ai'), aiPrompt);
     result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    Reveal.watch(result);
   }
 
   // ---- 时间起卦 ----

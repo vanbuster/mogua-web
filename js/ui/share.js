@@ -28,13 +28,19 @@
     }
   }
 
-  /** 把当前渲染结果打包成零依赖单文件 HTML（内联样式，五行条宽度固定） */
+  /** 把当前渲染结果打包成零依赖单文件 HTML（内联全部样式，动画落到终态） */
   async function downloadStandalone(title, innerHtml, filename) {
-    const cssHref = document.querySelector('link[rel=stylesheet]').href;
-    const css = await fetch(cssHref).then((r) => r.text());
-    const fixed = innerHtml.replace(/class="wx-bar (\w+)" data-w="(\d+)"/g, 'class="wx-bar $1" style="width:$2%"');
+    const sheets = Array.from(document.querySelectorAll('link[rel=stylesheet]'));
+    const css = (await Promise.all(sheets.map((l) => fetch(l.href).then((r) => r.text())))).join('\n');
+    const fixed = innerHtml
+      .replace(/class="wx-bar (\w+)" data-w="(\d+)"/g, 'class="wx-bar $1" style="width:$2%"')
+      // 进场动画靠 .in 触发，静态文件里没有脚本，直接落到终态
+      .replace(/class="card(?![\w-])/g, 'class="card in')
+      // 数字可能正处在滚动中途，导出时一律取 data-to 的终值
+      .replace(/<span class="count" data-to="(\d+)"[^>]*>[^<]*<\/span>/g, '$1%');
     const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">` +
-      `<title>${title}</title><style>${css}</style></head><body><div class="wrap">${fixed}</div></body></html>`;
+      `<title>${title}</title><style>${css}\n/* 静态导出：进场动画落到终态 */\n.rv{opacity:1;transform:none;filter:none}\n.card-title::before,.dayun-track::before{transform:none}</style>` +
+      `</head><body><div class="wrap">${fixed}</div></body></html>`;
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
